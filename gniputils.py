@@ -20,17 +20,21 @@ def register(trg):
 def dumpall_cmd(self, track, args):
     """<CMD> - dump info about song, view, tracks and first track to Log.txt
     <CMD> true - dump same info but with functions shown as well"""
+    self._parent.show_message('Running ' + CMD_ALL)
     show_funcs = args.lower() == 'true'
-    txt = ''
+    txt = '\nRUNNING ' + CMD_ALL
     txt += '\n' + _dumpobj(self.song(), show_funcs)
     txt += '\n' + _dumpobj(self.song().view, show_funcs)
     txt += '\n' + _dumpobj(self.song().tracks, show_funcs)
     txt += '\n' + _dumpobj(self.song().tracks[0], show_funcs)
+    if len(self.song().tracks[0].devices) > 0:
+        txt += '\n' + _dumpobj(self.song().tracks[0].devices[0])
     self._parent.log_message(txt)
 
 def dumptree_cmd(self, track, args):
     """Dump basic song, song view, track, clip info"""
-    t = '\n'
+    self._parent.show_message('Running ' + CMD_TREE)
+    t = '\nRUNNING ' + CMD_TREE + '\n'
     song = self.song()
     t += 'Song: length:%.f cur:%.f playing:%s tempo:%.f\n' % (
     song.song_length, song.current_song_time, song.is_playing, song.tempo)
@@ -40,11 +44,16 @@ def dumptree_cmd(self, track, args):
     t += 'Song view: selTrk:%s selScene:%s selClip:%s\n' % (sel_trk.name, sel_scene.name, hilited_clip)
     for track in song.tracks:
         t += '    track %s\n' % track.name
+        for device in track.devices:
+            t += '        Device: type:%-14s class:%s name:%s\n' % (device.type, device.class_name, device.name)
+            if hasattr(device, 'selected_preset_index') and hasattr(device, 'presets'):
+                t += '            selected preset: %s\n' % device.presets[device.selected_preset_index]
         for slot in track.clip_slots:
             tag = '' if slot.clip is None else slot.clip.name
             t += '        clipslot %s\n' % tag
 
     self._parent.log_message(t)
+    self._parent.show_message('Complete: ' + CMD_TREE)
 
 
 #################### Supporting code
